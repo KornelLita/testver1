@@ -51,22 +51,17 @@ export default function Home() {
 		setAnimatedResponse("");
 
 		const prompt = `
-🎓 Du är en expertlärare. Din uppgift är att analysera ett elevsvar baserat på en uppgift och en betygsmatris och sätta ett objektivt betyg mellan A och F.
+🎓 Du är en mycket erfaren lärare. Din uppgift är att objektivt bedöma en elevs argumenterande text utifrån uppgiften, betygsmatrisen och elevens svar. Du får inte utgå från något betyg i förväg – du ska börja från noll.
 
-📌 BEDÖMNINGSREGLER:
-- A: Alla A-kriterier uppfyllda.
-- B: Alla C-kriterier + några A-kriterier.
-- C: Alla C-kriterier uppfyllda.
-- D: Alla E-kriterier + några C-kriterier.
-- E: Alla E-kriterier uppfyllda.
-- F: Färre än E-kriterierna uppfyllda.
+📌 Regler för betyg:
+- ✅ A: Alla A-kriterier är uppfyllda
+- ✅ B: Alla C-kriterier är uppfyllda + några A-kriterier
+- ✅ C: Alla C-kriterier är uppfyllda
+- ✅ D: Alla E-kriterier är uppfyllda + några C-kriterier
+- ✅ E: Alla E-kriterier är uppfyllda
+- ✅ F: Om inte ens E-kriterierna uppfylls
 
-❌ Du får aldrig utgå från ett specifikt betyg. Börja från noll.
-✅ Du måste sätta ett tydligt betyg (A–F) med motivering baserat på matrisen.
-
----
-
-📝 Själva uppgiften:
+📝 Uppgiften eleven svarar på:
 ${assignment}
 
 📊 Betygsmatris:
@@ -75,11 +70,11 @@ ${rubric}
 ✍️ Elevens svar:
 ${studentAnswer}
 
----
-
-Svara med:
-Betyg: X  
-Motivering: ...
+📋 Gör följande:
+1. Sätt ett betyg (A–F)
+2. Motivera tydligt utifrån matrisen
+3. Beskriv varför det inte når högre betyg (om aktuellt)
+4. Använd ett professionellt och tydligt språk
 `;
 
 		const initialMessage = { role: "user", content: prompt };
@@ -123,146 +118,157 @@ Motivering: ...
 	}, [conversation, loading]);
 
 	return (
-		<main className="min-h-screen p-8 bg-gray-900 text-white flex gap-6">
-			{/* Vänster */}
-			<div className="w-1/2">
-				<h1 className="text-3xl font-bold mb-6">🧠 AI Provrättning</h1>
+		<main className="min-h-screen p-8 bg-gray-900 text-white">
+			<h1 className="text-4xl font-bold text-center mb-10">
+				🧠 AI Provrättning
+			</h1>
 
-				<form onSubmit={handleInitialSubmit} className="space-y-6">
-					<div>
-						<label className="block font-semibold mb-1">
-							📝 Själva uppgiften
-						</label>
-						<textarea
-							className="w-full h-24 p-2 rounded bg-gray-800 text-white border border-gray-700"
-							placeholder="Klistra in uppgiften här..."
-							value={assignment}
-							onChange={(e) => setAssignment(e.target.value)}
-						/>
-					</div>
-
-					<div>
-						<label className="block font-semibold mb-1">📊 Betygsmatris</label>
-						<textarea
-							className="w-full h-40 p-2 rounded bg-gray-800 text-white border border-gray-700"
-							placeholder="Klistra in betygsmatris här..."
-							value={rubric}
-							onChange={(e) => setRubric(e.target.value)}
-						/>
-					</div>
-
-					<div>
-						<label className="block font-semibold mb-1">✍️ Elevens svar</label>
-						<textarea
-							className="w-full h-40 p-2 rounded bg-gray-800 text-white border border-gray-700"
-							placeholder="Klistra in elevens svar här..."
-							value={studentAnswer}
-							onChange={(e) => setStudentAnswer(e.target.value)}
-						/>
-					</div>
-
-					<button
-						type="submit"
-						className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
-						disabled={loading}
-					>
-						{loading ? "AI tänker..." : "Analysera & Betygsätt"}
-					</button>
-				</form>
-			</div>
-
-			{/* Höger – AI-panel */}
-			<div className="w-1/2 bg-gray-800 border border-gray-600 rounded p-4 h-[600px] flex flex-col justify-between text-lg">
-				<div className="overflow-auto max-h-[500px] space-y-4 pr-2">
-					<h2 className="text-xl font-semibold mb-2">📋 AI:s bedömning</h2>
-
-					{error && <p className="text-red-400">❌ {error}</p>}
-
-					{conversation.slice(1).map((msg, index) => (
-						<div
-							key={index}
-							className="text-lg space-y-1 border-b border-gray-700 pb-3 mb-3"
-						>
-							<p
-								className={`font-bold ${
-									msg.role === "user" ? "text-white" : "text-purple-400"
-								}`}
-							>
-								{msg.role === "user" ? "Lärare" : "AIGrader"}
-							</p>
-
-							<p className="whitespace-pre-wrap text-gray-200 leading-relaxed">
-								{msg.role === "assistant" &&
-								index === conversation.length - 2 &&
-								!loading ? (
-									<span>{animatedResponse}</span>
-								) : (
-									msg.content
-								)}
-							</p>
+			<div className="flex gap-6">
+				{/* Vänster */}
+				<div className="w-1/2 space-y-6">
+					<form onSubmit={handleInitialSubmit} className="space-y-6">
+						<div>
+							<label className="block font-semibold mb-1">
+								📝 Själva uppgiften
+							</label>
+							<textarea
+								className="w-full h-40 p-2 rounded bg-gray-800 text-white border border-gray-700"
+								placeholder="Klistra in uppgiften här..."
+								value={assignment}
+								onChange={(e) => setAssignment(e.target.value)}
+							/>
 						</div>
-					))}
 
-					{loading && (
-						<div className="text-gray-400 animate-pulse">AI tänker...</div>
-					)}
+						<div>
+							<label className="block font-semibold mb-1">
+								📊 Betygsmatris
+							</label>
+							<textarea
+								className="w-full h-60 p-2 rounded bg-gray-800 text-white border border-gray-700"
+								placeholder="Klistra in betygsmatris här..."
+								value={rubric}
+								onChange={(e) => setRubric(e.target.value)}
+							/>
+						</div>
 
-					<div ref={endRef} />
+						<div>
+							<label className="block font-semibold mb-1">
+								✍️ Elevens svar
+							</label>
+							<textarea
+								className="w-full h-60 p-2 rounded bg-gray-800 text-white border border-gray-700"
+								placeholder="Klistra in elevens svar här..."
+								value={studentAnswer}
+								onChange={(e) => setStudentAnswer(e.target.value)}
+							/>
+						</div>
+
+						<button
+							type="submit"
+							className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
+							disabled={loading}
+						>
+							{loading ? "AI tänker..." : "Analysera & Betygsätt"}
+						</button>
+					</form>
 				</div>
 
-				{/* Frågeruta + snabbknappar */}
-				{conversation.length > 1 && !loading && (
-					<div className="mt-4 space-y-4">
-						{/* Följdfråga */}
-						<div>
-							<label className="block text-sm mb-1">
-								🔁 Följdfråga till AI
-							</label>
-							<div className="flex gap-2">
-								<input
-									type="text"
-									value={followUpQuestion}
-									onChange={(e) => setFollowUpQuestion(e.target.value)}
-									placeholder="Ställ följdfrågor till AiGrader"
-									className="flex-1 p-2 rounded bg-gray-700 text-white border border-gray-600"
-								/>
-								<button
-									onClick={handleFollowUp}
-									className="bg-green-600 px-4 py-2 rounded hover:bg-green-700"
+				{/* Höger – AI-panel */}
+				<div className="w-1/2 mt-1">
+					<div className="bg-gray-800 border border-gray-600 rounded p-4 h-[750px] flex flex-col justify-between text-lg">
+						<div className="overflow-auto max-h-[650px] space-y-4 pr-2">
+							<h2 className="text-xl font-semibold mb-2">📋 AI:s bedömning</h2>
+
+							{error && <p className="text-red-400">❌ {error}</p>}
+
+							{conversation.slice(1).map((msg, index) => (
+								<div
+									key={index}
+									className="text-lg space-y-1 border-b border-gray-700 pb-3 mb-3"
 								>
-									Skicka
-								</button>
-							</div>
+									<p
+										className={`font-bold ${
+											msg.role === "user" ? "text-white" : "text-purple-400"
+										}`}
+									>
+										{msg.role === "user" ? "Lärare" : "AIGrader"}
+									</p>
+
+									<p className="whitespace-pre-wrap text-gray-200 leading-relaxed">
+										{msg.role === "assistant" &&
+										index === conversation.length - 2 &&
+										!loading ? (
+											<span>{animatedResponse}</span>
+										) : (
+											msg.content
+										)}
+									</p>
+								</div>
+							))}
+
+							{loading && (
+								<div className="text-gray-400 animate-pulse">AI tänker...</div>
+							)}
+
+							<div ref={endRef} />
 						</div>
 
-						{/* Snabbfrågor */}
-						<div>
-							<p className="text-sm text-gray-400">
-								Ställ AiGrader följdfrågor:
-							</p>
-							<div className="flex flex-wrap gap-2">
-								{[
-									"Motivera djupare",
-									"Vilka områden kan eleven utveckla enligt matrisen?",
-									"Vad bör eleven tänka på inför framtiden?",
-								].map((q) => (
-									<button
-										key={q}
-										onClick={() => {
-											const followUp = { role: "user", content: q };
-											const newMessages = [...conversation, followUp];
-											setConversation(newMessages);
-											sendToAI(newMessages);
-										}}
-										className="bg-gray-700 text-white text-sm px-3 py-1 rounded hover:bg-gray-600"
-									>
-										{q}
-									</button>
-								))}
+						{/* Frågeruta + snabbknappar */}
+						{conversation.length > 1 && !loading && (
+							<div className="mt-4 space-y-4">
+								<div>
+									<label className="block text-sm mb-1">
+										🔁 Följdfråga till AI
+									</label>
+									<div className="flex gap-2">
+										<input
+											type="text"
+											value={followUpQuestion}
+											onChange={(e) => setFollowUpQuestion(e.target.value)}
+											placeholder="Ställ följdfrågor till AiGrader"
+											className="flex-1 p-2 rounded bg-gray-700 text-white border border-gray-600"
+										/>
+										<button
+											onClick={handleFollowUp}
+											className="bg-green-600 px-4 py-2 rounded hover:bg-green-700"
+										>
+											Skicka
+										</button>
+									</div>
+								</div>
+
+								<div>
+									<p className="text-sm text-gray-400">
+										Snabbfrågor till AiGrader:
+									</p>
+									<div className="flex flex-wrap gap-2">
+										{[
+											"Motivera djupare",
+											"Vilka områden kan eleven utveckla enligt matrisen?",
+											"Vad bör eleven tänka på inför framtiden?",
+										].map((q) => (
+											<button
+												key={q}
+												onClick={() => {
+													const followUp = {
+														role: "user",
+														content: q,
+													};
+													const newMessages = [...conversation, followUp];
+													setConversation(newMessages);
+													sendToAI(newMessages);
+												}}
+												className="bg-gray-700 text-white text-sm px-3 py-1 rounded hover:bg-gray-600"
+											>
+												{q}
+											</button>
+										))}
+									</div>
+								</div>
 							</div>
-						</div>
+						)}
 					</div>
-				)}
+				</div>
 			</div>
 		</main>
 	);
